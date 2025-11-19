@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍫 M&M Clicker 🍫</title>
+<style>
+  body {
+    background-color: #f9f9f9;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 { font-size: 40px; margin-bottom: 10px; }
+  #mMButton {
+    width: 150px;
+    height: 150px;
+    background-image: url('https://images.openai.com/static-rsc-1/5g_hVSfBDj2pqsNOdy-2esZCQ71WxY757825WDaJAs_ZScj14WmA77mXZh8cj06djfAT8pMM9vZHLqvmJng522Ar9dKNm3HA0oZSzCGWXje0l_5rCh4yRv5C-Rd-aBSJYvVSuhUVM1P_oI0vvN-Naw');
+    background-size: cover;
+    background-position: center;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 20px;
+    transition: transform 0.1s;
+  }
+  #mMButton:active { transform: scale(0.95); }
+  #score { font-size: 32px; color: #333; margin-bottom: 20px; }
+  .shop {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .upgrade {
+    background-color: #fff;
+    border: 2px solid #333;
+    border-radius: 10px;
+    padding: 10px;
+    width: 180px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .upgrade:hover { background-color: #e0e0e0; }
+  .upgrade button {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+    cursor: pointer;
+  }
+  .info { font-size: 14px; color: #555; }
+</style>
+</head>
+<body>
+
+<h1>🍫 M&M Clicker 🍫</h1>
+<p>Click the M&M!</p>
+<button id="mMButton"></button>
+<p>Score: <span id="score">0</span></p>
+
+<h2>Upgrades</h2>
+<div class="shop" id="shop"></div>
+
+<script>
+let score = 0;
+let clicksPerClick = 1;
+let autoClicksPerSecond = 0;
+
+const button = document.getElementById('mMButton');
+const scoreDisplay = document.getElementById('score');
+const shop = document.getElementById('shop');
+
+// Manual click upgrades (simpler version)
+const clickUpgrades = [
+  { name: "M&M Pack", cost: 500, value: 1 },
+  { name: "M&M Share Size", cost: 1000, value: 2 },
+  { name: "M&M Gallon Tub", cost: 2000, value: 3 },
+  { name: "M&M Farm", cost: 5000, value: 5 },
+  { name: "M&M Mine", cost: 10000, value: 10 },
+  { name: "M&M Kitchen", cost: 25000, value: 20 },
+  { name: "M&M Factory", cost: 50000, value: 50 },
+  { name: "M&M Planet", cost: 200000, value: 200 },
+  { name: "M&M Galaxy", cost: 500000, value: 500 },
+  { name: "M&M Universe", cost: 1000000, value: 1000 },
+  { name: "M&M Multiverse", cost: 2500000, value: 2500 },
+  { name: "M&M Omniverse", cost: 5000000, value: 5000 },
+  { name: "M&M Dimension", cost: 10000000, value: 50000 }
+];
+
+// Auto-clickers (simpler, lower numbers)
+const autoUpgrades = [
+  { name: "Worker", cost: 1000, value: 1 },
+  { name: "10 Workers", cost: 5000, value: 5 },
+  { name: "100 Workers", cost: 20000, value: 20 },
+  { name: "Factory Full of Workers", cost: 100000, value: 50 },
+  { name: "Packaging Robot", cost: 250000, value: 100 },
+  { name: "Candy Machine", cost: 500000, value: 500 },
+  { name: "Candy Factory", cost: 1000000, value: 1000 },
+  { name: "Candy Planet", cost: 5000000, value: 5000 },
+  { name: "Candy Galaxy", cost: 10000000, value: 10000 },
+  { name: "Candy Universe", cost: 50000000, value: 50000 },
+  { name: "M&M Dimension", cost: 10000000, value: 100000 }
+];
+
+// Combine all upgrades
+const allUpgrades = clickUpgrades.map(u => ({...u, type: 'click'}))
+  .concat(autoUpgrades.map(u => ({...u, type: 'auto'})));
+
+function updateScore() {
+  scoreDisplay.textContent = Math.floor(score);
+}
+
+// Build shop buttons
+allUpgrades.forEach((upgrade, index) => {
+  const div = document.createElement('div');
+  div.className = 'upgrade';
+  div.innerHTML = `
+    <strong>${upgrade.name}</strong><br>
+    <span class="info">Cost: ${upgrade.cost}<br>${upgrade.type === 'click' ? '+'+upgrade.value+' per click' : '+'+upgrade.value+'/s'}</span>
+    <button id="buy${index}">Buy</button>
+  `;
+  shop.appendChild(div);
+
+  document.getElementById(`buy${index}`).addEventListener('click', () => {
+    if (score >= upgrade.cost) {
+      score -= upgrade.cost;
+      if (upgrade.type === 'click') {
+        clicksPerClick += upgrade.value;
+      } else {
+        autoClicksPerSecond += upgrade.value;
+      }
+      updateScore();
+      // Scale cost
+      upgrade.cost = Math.floor(upgrade.cost * 1.5);
+      div.querySelector('.info').innerHTML = `Cost: ${upgrade.cost}<br>${upgrade.type === 'click' ? '+'+upgrade.value+' per click' : '+'+upgrade.value+'/s'}`;
+    } else {
+      alert("Not enough M&Ms!");
+    }
+  });
+});
+
+// Manual clicking
+button.addEventListener('click', () => {
+  score += clicksPerClick;
+  updateScore();
+});
+
+// Auto-clicker loop
+setInterval(() => {
+  score += autoClicksPerSecond;
+  updateScore();
+}, 1000);
+
+updateScore();
+</script>
+
+</body>
+</html>
